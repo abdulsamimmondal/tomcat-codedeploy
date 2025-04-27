@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: java-webapp
-        image: akashchandran/my-java-webapp:latest   # Your Docker Hub image
+        image: akashchandran/my-java-webapp:latest 
         ports:
         - containerPort: 8080
