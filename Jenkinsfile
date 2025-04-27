@@ -11,7 +11,6 @@ pipeline {
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
@@ -53,9 +52,15 @@ pipeline {
                                 script: "curl -u admin:admin '${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=${PROJECT_KEY}'", 
                                 returnStdout: true
                             ).trim()
-                            def statusJson = readJSON text: qualityGateStatus
-                            def gateStatus = statusJson.projectStatus.status
-                            return gateStatus == 'OK'
+                            echo "SonarQube API Response: ${qualityGateStatus}"  // Debug output
+                            if (qualityGateStatus) {
+                                def statusJson = readJSON text: qualityGateStatus
+                                def gateStatus = statusJson.projectStatus.status
+                                return gateStatus == 'OK'
+                            } else {
+                                echo "No data received from SonarQube API"
+                                return false
+                            }
                         }
                     }
                     if (qualityGateStatus.contains('ERROR')) {
