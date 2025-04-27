@@ -7,6 +7,6 @@ spec:
     app: java-webapp
   ports:
     - protocol: TCP
-      port: 8081      # Exposing the service on port 8081
+      port: 8081      # Exposing the service on port 8081.
       targetPort: 8080 # This is the port your container listens on (8080 in your case)
   type: NodePort      # Use NodePort to expose the app externally
