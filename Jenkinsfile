@@ -17,7 +17,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=Java-application -Dsonar.projectName='Java-application' -Dsonar.host.url=http://34.239.141.95:9000 -Dsonar.token=sqp_b7670fd0beb1d6301814e0afda996b6703c7e087'
+                    sh "mvn clean verify sonar:sonar -Dsonar.projectKey=Java-application -Dsonar.projectName='Java-application' -Dsonar.host.url=http://34.239.141.95:9000 -Dsonar.token=sqp_b7670fd0beb1d6301814e0afda996b6703c7e087"
                 }
             }
         }
