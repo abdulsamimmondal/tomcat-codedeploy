@@ -2,52 +2,96 @@ pipeline {
     agent any
 
     environment {
+        DOCKERHUB_USERNAME = 'akashchandran'
+        DOCKER_IMAGE = "${DOCKERHUB_USERNAME}/java-application"
         DOCKERHUB_TOKEN = credentials('docker-hub-credential')
-        // Ensure the SonarQube server name matches the one configured in Jenkins
-        SONARQUBE_ENV = 'SonarQb'
+        SONARQUBE_TOKEN = credentials('SonarQb')
+        SONARQUBE_URL = 'http://34.239.141.95:9000'
+        PROJECT_KEY = 'Java-application'
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                    mvn clean install
+                '''
+            }
+        }
+
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    sh "mvn clean verify sonar:sonar -Dsonar.projectKey=Java-application -Dsonar.projectName='Java-application' -Dsonar.host.url=http://34.239.141.95:9000 -Dsonar.token=sqp_b7670fd0beb1d6301814e0afda996b6703c7e087"
+                withSonarQubeEnv('sonarqube') {
+                    script {
+                        sh """
+                            mvn clean verify sonar:sonar \
+                                -Dsonar.projectKey=${PROJECT_KEY} \
+                                -Dsonar.projectName='Java-application' \
+                                -Dsonar.host.url=${SONARQUBE_URL} \
+                                -Dsonar.token=${SONARQUBE_TOKEN}
+                        """
+                    }
                 }
             }
         }
 
-        stage('Quality Gate') {
+        stage('Quality Gate Check') {
             steps {
-                timeout(time: 1, unit: 'HOURS') {
-                    waitForQualityGate abortPipeline: true
+                script {
+                    // Wait for quality gate to pass
+                    def qualityGateStatus = ''
+                    timeout(time: 5, unit: 'MINUTES') {
+                        waitUntil {
+                            qualityGateStatus = sh(
+                                script: "curl -u admin:admin '${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=${PROJECT_KEY}'", 
+                                returnStdout: true
+                            ).trim()
+                            def statusJson = readJSON text: qualityGateStatus
+                            def gateStatus = statusJson.projectStatus.status
+                            return gateStatus == 'OK'
+                        }
+                    }
+                    if (qualityGateStatus.contains('ERROR')) {
+                        error "SonarQube Quality Gate failed, aborting pipeline."
+                    }
                 }
             }
         }
 
-        stage('Build and Test') {
+        stage('Build and Push Docker Image') {
             when {
                 branch 'main'
             }
             steps {
-                sh 'mvn clean install'
-                sh 'mvn test'
-                sh "echo ${DOCKERHUB_TOKEN} | docker login -u akashchandran --password-stdin"
-                sh 'docker build -t akashchandran/my-java-webapp:latest .'
-                sh 'docker push akashchandran/my-java-webapp:latest'
+                sh """
+                    echo ${DOCKERHUB_TOKEN} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin
+                    docker build -t ${DOCKER_IMAGE} .
+                    docker push ${DOCKER_IMAGE}
+                """
             }
         }
 
-        stage('Deployment') {
+        stage('Deploy to Kubernetes') {
+            when {
+                branch 'main'
+            }
             steps {
                 sh 'kubectl apply -f deployment.yaml'
                 sh 'kubectl apply -f service.yaml'
             }
+        }
+    }
+
+    post {
+        always {
+            sh 'docker logout || true'
         }
     }
 }
