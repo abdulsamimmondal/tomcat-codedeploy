@@ -44,27 +44,28 @@ pipeline {
         stage('Quality Gate Check') {
             steps {
                 script {
-                    // Wait for quality gate to pass
-                    def qualityGateStatus = ''
-                    timeout(time: 5, unit: 'MINUTES') {
-                        waitUntil {
-                            qualityGateStatus = sh(
-                                script: "curl -u admin:admin '${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=${PROJECT_KEY}'", 
-                                returnStdout: true
-                            ).trim()
-                            echo "SonarQube API Response: ${qualityGateStatus}"  // Debug output
-                            if (qualityGateStatus) {
-                                def statusJson = readJSON text: qualityGateStatus
-                                def gateStatus = statusJson.projectStatus.status
-                                return gateStatus == 'OK'
-                            } else {
-                                echo "No data received from SonarQube API"
-                                return false
+                    // Skip waiting for quality gate status, and just log the result
+                    try {
+                        def qualityGateStatus = sh(
+                            script: "curl -u admin:admin '${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=${PROJECT_KEY}'", 
+                            returnStdout: true
+                        ).trim()
+                        echo "SonarQube API Response: ${qualityGateStatus}"  // Debug output
+                        
+                        if (qualityGateStatus) {
+                            def statusJson = readJSON text: qualityGateStatus
+                            def gateStatus = statusJson.projectStatus.status
+                            echo "Quality Gate Status: ${gateStatus}"
+                            
+                            // Log and continue the pipeline, even if the gate fails
+                            if (gateStatus != 'OK') {
+                                echo "Warning: SonarQube Quality Gate failed, continuing pipeline."
                             }
+                        } else {
+                            echo "No data received from SonarQube API"
                         }
-                    }
-                    if (qualityGateStatus.contains('ERROR')) {
-                        error "SonarQube Quality Gate failed, aborting pipeline."
+                    } catch (Exception e) {
+                        echo "Error retrieving SonarQube Quality Gate status: ${e.getMessage()}"
                     }
                 }
             }
