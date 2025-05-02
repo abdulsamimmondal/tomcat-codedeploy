@@ -6,7 +6,7 @@ pipeline {
         DOCKER_IMAGE = "${DOCKERHUB_USERNAME}/java-application"
         DOCKERHUB_TOKEN = credentials('docker-hub-credential')
         SONARQUBE_TOKEN = credentials('SonarQb')
-        SONARQUBE_URL = 'http://54.162.159.93:9000'
+        SONARQUBE_URL = 'http://54.198.92.159:9000/'
         PROJECT_KEY = 'Java-application'
     }
 
