@@ -5,24 +5,24 @@ phases:
     runtime-versions:
       java: corretto11
     commands:
-      - echo "Installing dependencies..."
+      - echo "Installing Maven and Java"
       - mvn -version
 
   pre_build:
     commands:
-      - echo "Cleaning the project..."
+      - echo "Cleaning workspace"
       - mvn clean
 
   build:
     commands:
-      - echo "Building the project..."
+      - echo "Packaging WAR file"
       - mvn package
 
   post_build:
     commands:
-      - echo "Build completed successfully!"
-      - ls target/
+      - echo "WAR file built successfully"
+      - ls -l target/*.war
 
 artifacts:
   files:
-    - target/*.jar
+    - target/*.war
