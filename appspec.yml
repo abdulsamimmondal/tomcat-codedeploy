@@ -2,7 +2,7 @@ version: 0.0
 os: linux
 
 files:
-  - source: target/*.war
+  - source: target/HelloWorld-0.0.1-SNAPSHOT.war
     destination: /opt/tomcat/webapps/
     overwrite: true
 
