@@ -5,23 +5,23 @@ phases:
     runtime-versions:
       java: corretto11
     commands:
-      - echo "Install phase: using preinstalled Maven"
+      - echo "Installing dependencies..."
       - mvn -version
 
   pre_build:
     commands:
-      - echo "Pre-build phase: cleaning project"
+      - echo "Cleaning the project..."
       - mvn clean
 
   build:
     commands:
-      - echo "Build phase: packaging project"
+      - echo "Building the project..."
       - mvn package
 
   post_build:
     commands:
-      - echo "Post-build phase: completed successfully"
-      - echo "Build artifact: target/*.jar"
+      - echo "Build completed successfully!"
+      - ls target/
 
 artifacts:
   files:
