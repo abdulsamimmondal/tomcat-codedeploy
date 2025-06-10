@@ -3,32 +3,26 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      java: corretto11  # or your required version
+      java: corretto11
     commands:
-      - echo Installing Maven...
-      - curl -sL https://apache.osuosl.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz | tar xz -C /tmp
-      - export MAVEN_HOME=/tmp/apache-maven-3.8.8
-      - export PATH=$MAVEN_HOME/bin:$PATH
-      - mvn --version
+      - echo "Install phase: using preinstalled Maven"
+      - mvn -version
 
   pre_build:
     commands:
-      - echo Running tests...
-      - mvn test
+      - echo "Pre-build phase: cleaning project"
+      - mvn clean
 
   build:
     commands:
-      - echo Building WAR file...
-      - mvn clean package -DskipTests=false
+      - echo "Build phase: packaging project"
+      - mvn package
 
   post_build:
     commands:
-      - echo Build completed at `date`
+      - echo "Post-build phase: completed successfully"
+      - echo "Build artifact: target/*.jar"
 
 artifacts:
   files:
-    - target/*.war
-
-cache:
-  paths:
-    - '/root/.m2/**/*'
+    - target/*.jar
