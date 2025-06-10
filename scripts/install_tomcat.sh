@@ -7,13 +7,14 @@ echo ">>> Installing Java and Tomcat 10.1.42"
 apt-get update -y
 apt-get install -y default-jdk curl
 
-# Create tomcat user
-id -u tomcat &>/dev/null || useradd -m -U -d /opt/tomcat -s /bin/false tomcat
+# Create tomcat user if not exists
+id -u tomcat &>/dev/null || useradd -r -m -U -d /opt/tomcat -s /bin/false tomcat
 
 # Download and extract Tomcat 10.1.42
 TOMCAT_VERSION=10.1.42
 cd /tmp
 curl -O https://dlcdn.apache.org/tomcat/tomcat-10/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz
+
 mkdir -p /opt/tomcat
 tar -xzf apache-tomcat-${TOMCAT_VERSION}.tar.gz -C /opt/tomcat --strip-components=1
 
@@ -21,7 +22,7 @@ tar -xzf apache-tomcat-${TOMCAT_VERSION}.tar.gz -C /opt/tomcat --strip-component
 chown -R tomcat:tomcat /opt/tomcat
 chmod +x /opt/tomcat/bin/*.sh
 
-# Create systemd service file
+# Create systemd service file for Tomcat
 cat <<EOF > /etc/systemd/system/tomcat.service
 [Unit]
 Description=Apache Tomcat 10 Web Application Container
@@ -36,18 +37,21 @@ Environment="CATALINA_HOME=/opt/tomcat"
 Environment="CATALINA_PID=/opt/tomcat/temp/tomcat.pid"
 ExecStart=/opt/tomcat/bin/startup.sh
 ExecStop=/opt/tomcat/bin/shutdown.sh
+SuccessExitStatus=143
 Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-# Start and enable the service
+# Reload and start Tomcat
 systemctl daemon-reload
 systemctl enable tomcat
 systemctl start tomcat
 
-# Open firewall port (optional, ignore if ufw is not used)
-ufw allow 8080/tcp || true
+# Open port 8080 if UFW is active
+if command -v ufw &>/dev/null && ufw status | grep -q active; then
+    ufw allow 8080/tcp
+fi
 
 echo ">>> Tomcat 10 installed and started"
