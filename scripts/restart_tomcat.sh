@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
 
-echo ">>> Starting Tomcat service"
-systemctl start tomcat
-echo ">>> Tomcat started successfully"
+echo ">>> Restarting Tomcat service"
+systemctl restart tomcat
+echo "Tomcat restarted successfully"
