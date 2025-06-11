@@ -1,10 +1,6 @@
 version: 0.0
 os: linux
 
-files:
-  - source: target/*.war
-    destination: /opt/tomcat/webapps/
-
 file_exists_behavior: OVERWRITE
 
 hooks:
@@ -13,12 +9,7 @@ hooks:
       timeout: 300
       runas: root
 
-  AfterInstall:
-    - location: scripts/rename_war.sh
-      timeout: 60
-      runas: root
-
-  ApplicationStart:
+   ApplicationStart:
     - location: scripts/server_start.sh
       timeout: 300
       runas: root
