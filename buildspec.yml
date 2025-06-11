@@ -22,12 +22,11 @@ phases:
     commands:
       - echo "WAR file built successfully"
       - ls -l target/*.war
+      - cp target/*.war target/ROOT.war
 
 artifacts:
   files:
     - appspec.yml
     - scripts/**/*
-    - target/*.war
-  discard-paths: no  
-  
-  
+    - target/ROOT.war
+  discard-paths: no
