@@ -1,6 +1,10 @@
 version: 0.0
 os: linux
 
+files:
+  - source: target/HelloWorld-0.0.1-SNAPSHOT.war
+    destination: /opt/tomcat/webapps/
+
 file_exists_behavior: OVERWRITE
 
 hooks:
@@ -9,7 +13,12 @@ hooks:
       timeout: 300
       runas: root
 
-   ApplicationStart:
+  AfterInstall:
+    - location: scripts/rename_war.sh
+      timeout: 60
+      runas: root
+
+  ApplicationStart:
     - location: scripts/server_start.sh
       timeout: 300
       runas: root
