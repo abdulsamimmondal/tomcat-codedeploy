@@ -2,7 +2,7 @@ version: 0.0
 os: linux
 
 files:
-  - source: target/HelloWorld-0.0.1-SNAPSHOT.war
+  - source: target/*.war
     destination: /opt/tomcat/webapps/
 
 file_exists_behavior: OVERWRITE
