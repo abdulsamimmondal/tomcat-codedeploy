@@ -28,6 +28,6 @@ artifacts:
     - appspec.yml
     - scripts/**/*
     - target/*.war
-  discard-paths: yes  
+  discard-paths: no  
   
   
