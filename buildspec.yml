@@ -25,5 +25,4 @@ phases:
 
 artifacts:
   files:
-    - target/*.war
-    - appspec.yml
+    - **/*
